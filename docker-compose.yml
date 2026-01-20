@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: RealEstate_DB
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - real-estate-network
+
+  real-estate-backend:
+    build: ./real-estate-backend
+    container_name: real-estate-backend
+    restart: unless-stopped
+    env_file:
+      - ./real-estate-backend/.env
+    environment:
+      DB_HOST: mysql
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mysql
+    networks:
+      - real-estate-network
+
+  real-estate-frontend:
+    build: ./real-estate-frontend
+    container_name: real-estate-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./real-estate-frontend/.env
+    depends_on:
+      - real-estate-backend
+    networks:
+      - real-estate-network
+
+volumes:
+  mysql_data:
+
+networks:
+  real-estate-network:
+    driver: bridge
